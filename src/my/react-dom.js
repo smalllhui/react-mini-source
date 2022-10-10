@@ -32,6 +32,9 @@ function createDom(vdom) {
   if (type === REACT_TEXT) {
     // 文本
     dom = document.createTextNode(content)
+  } else if (typeof type === "function") {// 函数式组件
+    // 变成一个vNode
+    return mountFunctionComponent(vdom)
   } else {
     // 元素
     dom = document.createElement(type) // div
@@ -49,6 +52,15 @@ function createDom(vdom) {
   return dom
 }
 
+/**
+ * 处理函数式组件，返回函数的虚拟dom
+ * @param {*} vdom  虚拟dom
+ */
+function mountFunctionComponent(vdom) {
+  let { type, props } = vdom
+  let functioVdom = type(props)
+  return createDom(functioVdom)
+}
 /**
  * 处理子节点挂载到真实dom上
  * @param {*} children  子节点
