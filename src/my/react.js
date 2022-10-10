@@ -1,5 +1,6 @@
 import { REACT_ELEMENT } from "./constant"
 import { toVdom } from "./util"
+import Component from "./Component"
 
 /**
  * 创建虚拟dom
@@ -39,7 +40,8 @@ function createElement(type, props, children) {
 }
 
 const React = {
-  createElement
+  createElement,
+  Component
 }
 
 export default React

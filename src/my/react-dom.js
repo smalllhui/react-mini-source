@@ -32,9 +32,12 @@ function createDom(vdom) {
   if (type === REACT_TEXT) {
     // 文本
     dom = document.createTextNode(content)
-  } else if (typeof type === "function") {// 函数式组件
+  } else if (typeof type === "function") {// 区分 【函数式组件 还是类组件】
+    if (type.isReactComponent) {
+      return mountClassComponent(vdom) //类组件
+    }
     // 变成一个vNode
-    return mountFunctionComponent(vdom)
+    return mountFunctionComponent(vdom) //函数式组件
   } else {
     // 元素
     dom = document.createElement(type) // div
@@ -50,6 +53,20 @@ function createDom(vdom) {
     }
   }
   return dom
+}
+
+/**
+ * 处理类组件：将类组件转换为真实dom并返回
+ * @param {*} vdom  虚拟dom
+ */
+function mountClassComponent(vdom) {
+  let { type, props } = vdom
+  // 注意 type是个类 =》 render 返回值
+  let classInstance = new type(props)
+  // 获取到虚拟dom
+  let classVnode = classInstance.render()
+  // 生成真实dom并返回
+  return createDom(classVnode)
 }
 
 /**
