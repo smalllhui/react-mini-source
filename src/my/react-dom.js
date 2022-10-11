@@ -27,7 +27,7 @@ function mount(vdom, dom) {
  * @param {*} vdom 
  */
 function createDom(vdom) {
-  const { type, props, content } = vdom
+  const { type, props, content, ref } = vdom
   // 真实dom
   let dom;
   // 1、判断type => 文本 或者元素div
@@ -56,6 +56,8 @@ function createDom(vdom) {
   }
   // 将真实dom保存到vdom上
   vdom.dom = dom
+  // 将真实dom绑定到ref.current上
+  if (ref) ref.current = dom
   // 返回真实
   return dom
 }

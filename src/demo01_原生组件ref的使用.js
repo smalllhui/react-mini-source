@@ -1,8 +1,8 @@
-// import React from 'react'
-// import ReactDOM from 'react-dom'
+import React from 'react'
+import ReactDOM from 'react-dom'
 
-import React from './my/react'
-import ReactDOM from './my/react-dom'
+// import React from './my/react'
+// import ReactDOM from './my/react-dom'
 
 // 使用原生组件的ref
 
