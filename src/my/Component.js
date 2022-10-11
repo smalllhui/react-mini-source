@@ -1,8 +1,22 @@
 import { updateDom } from "./react-dom"
 
 /**
- * 更新器
- *  用户获取到最新的数据
+ * 更新队列
+ */
+export const updateQueue = {
+  isBatchData: false,// 标识符 是同步更新还是异步更新 true:异步 false:同步
+  updaters: [], //需要更新的数组
+  batchUpdate() {
+    // 执行批量更新
+    updateQueue.updaters.forEach(updater => updater.updateComponent())
+    // 清空数组
+    updateQueue.updaters.length = 0
+    // 修改标识符为同步更新
+    updateQueue.isBatchData = false
+  }
+}
+/**
+ * 更新器 用户获取到最新的数据
  */
 class Updater {
   constructor(classInsatnce) {
@@ -24,7 +38,14 @@ class Updater {
    * 通知更新
    */
   emitUpdate() {
-    this.updateComponent()
+    // 判读是异步还是同步更新
+    if (updateQueue.isBatchData) { //异步
+      // 需要收集setState => updater => this
+      updateQueue.updaters.push(this)
+    } else {
+      //同步更新
+      this.updateComponent()
+    }
   }
 
   /**
