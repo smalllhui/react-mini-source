@@ -1,10 +1,10 @@
-// import React from 'react'
-// import ReactDOM from 'react-dom'
+import React from 'react'
+import ReactDOM from 'react-dom'
 
-import React from './my/react'
-import ReactDOM from './my/react-dom'
+// import React from './my/react'
+// import ReactDOM from './my/react-dom'
 
-// 实现函数式组件的ref
+// 函数式组件的ref的使用
 function TextInput(props, ref) {
   return (
     <input ref={ref}></input>
@@ -12,7 +12,6 @@ function TextInput(props, ref) {
 }
 // 函数式组件ref的传递必须通过forwardRef进行转发
 const ForwardTextInput = React.forwardRef(TextInput)
-
 
 class MyClassComponent extends React.Component {
   constructor(props) {

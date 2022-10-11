@@ -1,4 +1,4 @@
-import { REACT_TEXT } from "./constant"
+import { REACT_TEXT, REACT_FORWARD_REF } from "./constant"
 import { toVdom } from "./util"
 import { addEvent } from "./event"
 /**
@@ -40,6 +40,9 @@ function createDom(vdom) {
     }
     // 变成一个vNode
     return mountFunctionComponent(vdom) //函数式组件
+  }
+  else if (type && type.$$typeof === REACT_FORWARD_REF) {// forwardRef组件
+    return mountForwardRefComponent(vdom) //处理forwardRef组件
   } else {
     // 元素
     dom = document.createElement(type) // div
@@ -62,6 +65,16 @@ function createDom(vdom) {
   return dom
 }
 
+/**
+ * 处理forwardRef组件：将类组件转换为真实dom并返回
+ * @param {*} vdom  虚拟dom
+ */
+function mountForwardRefComponent(vdom) {
+  let { type, props, ref } = vdom
+  let refVNode = type.render(props, ref) //函数式组件
+  // 生成真实dom并返回
+  return createDom(refVNode)
+}
 /**
  * 处理类组件：将类组件转换为真实dom并返回
  * @param {*} vdom  虚拟dom

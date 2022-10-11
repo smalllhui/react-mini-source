@@ -1,4 +1,4 @@
-import { REACT_ELEMENT } from "./constant"
+import { REACT_ELEMENT, REACT_FORWARD_REF } from "./constant"
 import { toVdom } from "./util"
 import Component from "./Component"
 
@@ -44,9 +44,17 @@ function createRef() {
   return { current: null }
 }
 
+
+function forwardRef(render) {
+  return {
+    $$typeof: REACT_FORWARD_REF,
+    render
+  }
+}
 const React = {
   createElement,
   createRef,
+  forwardRef,
   Component
 }
 
