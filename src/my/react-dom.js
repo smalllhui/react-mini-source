@@ -67,9 +67,11 @@ function createDom(vdom) {
  * @param {*} vdom  虚拟dom
  */
 function mountClassComponent(vdom) {
-  let { type, props } = vdom
+  let { type, props, ref } = vdom
   // 注意 type是个类 =》 render 返回值
   let classInstance = new type(props)
+  // 将类组件的实例绑定到ref.current上
+  if (ref) ref.current = classInstance
   // 获取到虚拟dom
   let classVnode = classInstance.render()
   // 将虚拟dom放到组件实例上

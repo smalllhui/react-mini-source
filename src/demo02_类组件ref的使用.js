@@ -1,10 +1,10 @@
-// import React from 'react'
-// import ReactDOM from 'react-dom'
+import React from 'react'
+import ReactDOM from 'react-dom'
 
-import React from './my/react'
-import ReactDOM from './my/react-dom'
+// import React from './my/react'
+// import ReactDOM from './my/react-dom'
 
-// 类组件的ref的实现
+// 类组件的ref的使用
 
 class TextInput extends React.Component {
   constructor(props) {
