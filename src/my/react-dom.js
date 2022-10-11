@@ -1,5 +1,6 @@
 import { REACT_TEXT } from "./constant"
 import { toVdom } from "./util"
+import { addEvent } from "./event"
 /**
  * 将VNode渲染到container上面
  * @param {*} vdom 虚拟Dom
@@ -124,7 +125,9 @@ function updateProps(dom, oldProps, newProps) {
         }
       } else if (key.startsWith("on")) {
         //处理事件
-        dom[key.toLocaleLowerCase()] = newProps[key]
+        // dom[key.toLocaleLowerCase()] = newProps[key]
+        // 以后不在把事件绑定在dom上,而是通过事件委托全部放到document上
+        addEvent(dom, key.toLocaleLowerCase(), newProps[key])
       }
       else {
         // 其它属性 className key
