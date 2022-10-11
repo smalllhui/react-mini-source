@@ -1,4 +1,5 @@
 import { REACT_TEXT } from "./constant"
+import { toVdom } from "./util"
 /**
  * 将VNode渲染到container上面
  * @param {*} vdom 虚拟Dom
@@ -52,6 +53,9 @@ function createDom(vdom) {
       changeChildren(children, dom)
     }
   }
+  // 将真实dom保存到vdom上
+  vdom.dom = dom
+  // 返回真实
   return dom
 }
 
@@ -65,6 +69,8 @@ function mountClassComponent(vdom) {
   let classInstance = new type(props)
   // 获取到虚拟dom
   let classVnode = classInstance.render()
+  // 将虚拟dom放到组件实例上
+  classInstance.oldReaderVnode = classVnode
   // 生成真实dom并返回
   return createDom(classVnode)
 }
@@ -84,12 +90,16 @@ function mountFunctionComponent(vdom) {
  * @param {*} dom 真实dom
  */
 function changeChildren(children, dom) {
+  // 兼容webpack babel默认的转换 React.createElement
+  children = toVdom(children)
   // 1、有一个儿子 { type: REACT_TEXT, content: 666 }
   if (typeof children === "object" && children.type) {
     mount(children, dom)
   }
   else if (Array.isArray(children)) { // 2、有多个儿子
-    children.forEach(vChildNode => mount(vChildNode, dom))
+    // children.forEach(vChildNode => mount(vChildNode, dom))
+    // 兼容webpack babel默认的转换 React.createElement
+    children.forEach(vChildNode => mount(toVdom(vChildNode), dom))
   }
 
 }
@@ -100,35 +110,55 @@ function changeChildren(children, dom) {
  * @param {*} newProps 新的属性
  */
 function updateProps(dom, oldProps, newProps) {
+
   if (newProps) {
     for (let key in newProps) {
       // 处理属性  <div></div>  注意:children style={color:"red",fontSize:"18px"}
       if (key === "children") {
-        continue;
+        continue;//此处不处理
       } else if (key === "style") {
-        // {color:"red",fontSize:"18px"}
+        // 处理样式 {color:"red",fontSize:"18px"}
         let styleObject = newProps.style
         for (let attr in styleObject) {
           dom.style[attr] = styleObject[attr]
         }
-      } else {
+      } else if (key.startsWith("on")) {
+        //处理事件
+        dom[key.toLocaleLowerCase()] = newProps[key]
+      }
+      else {
         // 其它属性 className key
         dom[key] = newProps[key]
       }
     }
   }
 
-
   // 更新属性
   if (oldProps) {
     // 旧的属性在新的属性中没有 =》 删除
     for (let key in oldProps) {
-      if (!newProps[key]) {
-        dom[key] = null
+      if (!newProps.hasOwnProperty(key)) {
+        delete dom[key]
       }
     }
   }
 }
-const ReactDOM = { render }
 
+/**
+ * 更新dom
+ * @param {*} parentDom 父节点真实dom
+ * @param {*} oldVNode 旧的虚拟dom
+ * @param {*} newVNode 新的虚拟dom
+ */
+export function updateDom(parentDom, oldVNode, newVNode) {
+  // 获取到真实dom
+  let oldDom = oldVNode.dom
+  // 生成真实dom
+  let newDom = createDom(newVNode)
+  // 更新dom
+  parentDom.replaceChild(newDom, oldDom)
+}
+
+
+const ReactDOM = { render }
 export default ReactDOM
