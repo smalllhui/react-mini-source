@@ -54,7 +54,7 @@ function createDom(vdom) {
     // 2.2、处理children
     const { children } = props
     if (children) {
-      changeChildren(children, dom)
+      handleChildren(children, dom)
     }
   }
   // 将真实dom保存到vdom上
@@ -107,7 +107,7 @@ function mountFunctionComponent(vdom) {
  * @param {*} children  子节点
  * @param {*} dom 真实dom
  */
-function changeChildren(children, dom) {
+function handleChildren(children, dom) {
   // 兼容webpack babel默认的转换 React.createElement
   children = toVdom(children)
   // 1、有一个儿子 { type: REACT_TEXT, content: 666 }

@@ -21,23 +21,30 @@ export const updateQueue = {
 class Updater {
   constructor(classInsatnce) {
     this.classInsatnce = classInsatnce //保存类组件实例 获取render
-    this.peddingState = [] //用与保存待更新的数据的数组
+    this._pendingStateQueue = [] //用与保存待更新的数据的数组
+    this._pendingCallbackQueue = [] //用与保存更新的数据的回调函数数组
   }
 
   /**
-   * 将最新的数据添加到的【待更新的数据的数组】
-   * @param {*} partialState  最新的数据
+   * 保存待更新的状态到更新队列
+   * @param {*} partialState  待更新的状态
    */
-  addState(partialState) {
-    this.peddingState.push(partialState)
+  enqueueSetState(partialState) {
+    this._pendingStateQueue.push(partialState)
     // 更新
-    this.emitUpdate()
+    this.enqueueUpdate()
   }
-
   /**
+   * 保存更新的数据的回调函数回调函数队列
+   * @param {*} callback 回调函数
+   */
+  enqueueCallback(callback) {
+    this._pendingCallbackQueue.push(callback)
+  }
+  /** 
    * 通知更新
    */
-  emitUpdate() {
+  enqueueUpdate() {
     // 判读是异步还是同步更新
     if (updateQueue.isBatchData) { //异步
       // 需要收集setState => updater => this
@@ -52,24 +59,41 @@ class Updater {
    * 更新组件
    */
   updateComponent() {
-    const { peddingState, classInsatnce } = this
+    const { _pendingStateQueue, classInsatnce } = this
     // 获取到数据 => 更新组件
-    if (peddingState.length > 0) {
+    if (_pendingStateQueue.length > 0) {
       shouldUpdate(classInsatnce, this.getState())
+      this.executeUpdatedCallback()
+    }
+  }
+
+  /**
+   * 执行更新状态后render后的回调函数
+   */
+  executeUpdatedCallback() {
+    if (this._pendingCallbackQueue.length > 0) {
+      this._pendingCallbackQueue.forEach(callback => callback())
+      this._pendingCallbackQueue.length = 0
     }
   }
 
   // 获取到最新的状态
   getState() {
-    const { peddingState, classInsatnce } = this
+    const { _pendingStateQueue, classInsatnce } = this
     // 获取到旧的数据
-    let { state } = classInsatnce
+    let { state, props } = classInsatnce
     // 生成最新的数据
-    peddingState.forEach(partialState => {
-      state = { ...state, ...partialState }
+    _pendingStateQueue.forEach(partialState => {
+      if (typeof partialState === "object") {
+        state = { ...state, ...partialState }
+      } else if (typeof partialState === "function") {
+        const nextState = partialState && partialState(state, { ...props })
+        if (typeof nextState === "object")
+          state = { ...state, ...nextState }
+      }
     })
     // 清空【更新数据的数组】
-    peddingState.length = 0
+    _pendingStateQueue.length = 0
     // 返回最新数据
     return state
   }
@@ -103,10 +127,14 @@ class Component {
 
   /**
    * 更新数据
-   * @param {*} partialState 部分数据
+   * @param {object|function} partialState 部分数据
+   *  @param {?function} callback 回调函数
    */
-  setState(partialState) {
-    this.updater.addState(partialState)
+  setState(partialState, callback) {
+    if (callback && typeof callback === "function") {
+      this.updater.enqueueCallback(callback)
+    }
+    this.updater.enqueueSetState(partialState)
   }
 
   /**
