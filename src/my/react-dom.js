@@ -89,6 +89,8 @@ function mountClassComponent(vdom) {
   let classVnode = classInstance.render()
   // 将虚拟dom放到组件实例上
   classInstance.oldReaderVnode = classVnode
+  // 给vdom添加oldReaderVnode属性
+  vdom.oldReaderVnode = classVnode
   // 生成真实dom并返回
   return createDom(classVnode)
 }
@@ -100,6 +102,8 @@ function mountClassComponent(vdom) {
 function mountFunctionComponent(vdom) {
   let { type, props } = vdom
   let functioVdom = type(props)
+  // 给vdom添加oldReaderVnode属性
+  vdom.oldReaderVnode = functioVdom
   return createDom(functioVdom)
 }
 /**
@@ -115,9 +119,9 @@ function handleChildren(children, dom) {
     mount(children, dom)
   }
   else if (Array.isArray(children)) { // 2、有多个儿子
-    // children.forEach(vChildNode => mount(vChildNode, dom))
+    // children.forEach(vChildDom => mount(vChildDom, dom))
     // 兼容webpack babel默认的转换 React.createElement
-    children.forEach(vChildNode => mount(toVdom(vChildNode), dom))
+    children.forEach(vChildDom => mount(toVdom(vChildDom), dom))
   }
 
 }
@@ -166,17 +170,32 @@ function updateProps(dom, oldProps, newProps) {
 
 /**
  * 更新dom
- * @param {*} parentDom 父节点真实dom
  * @param {*} oldVNode 旧的虚拟dom
  * @param {*} newVNode 新的虚拟dom
  */
-export function updateDom(parentDom, oldVNode, newVNode) {
-  // 获取到真实dom
-  let oldDom = oldVNode.dom
+export function updateDom(oldVNode, newVNode) {
+  // 获取到旧的虚拟dom的真实dom
+  let oldDom = findDOM(oldVNode)
   // 生成真实dom
   let newDom = createDom(newVNode)
+  // 获取到旧节点的父节点
+  let parentDom = oldDom.parentNode
   // 更新dom
   parentDom.replaceChild(newDom, oldDom)
+}
+
+/**
+ * 根据虚拟dom查找dom
+ * @param {*} vNode 
+ */
+function findDOM(vdom) {
+  if (!vdom) return null
+
+  if (vdom.dom)
+    return vdom.dom
+  else {
+    return findDOM(vdom.oldReaderVnode)
+  }
 }
 
 

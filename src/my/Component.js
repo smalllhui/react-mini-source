@@ -144,8 +144,7 @@ class Component {
     // 获取到新的虚拟dom
     let newVNode = this.render()
     let oldVNode = this.oldReaderVnode  //获取初始化的时候有旧的VNode
-    let parentDom = oldVNode.dom.parentNode
-    updateDom(parentDom, oldVNode, newVNode)
+    updateDom(oldVNode, newVNode)
     // 将新的VNode变为旧的VNode
     this.oldReaderVnode = newVNode
   }
