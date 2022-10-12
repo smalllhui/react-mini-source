@@ -28,6 +28,7 @@ class MyClassComponent extends React.Component {
     super(props) //执行父类构造函数
     this.state = { num: 1 }
 
+    // 更新状态
     setTimeout(() => {
       this.setState({ num: 2 })
     }, 1000)
